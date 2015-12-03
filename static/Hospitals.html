@@ -1,0 +1,156 @@
+<html>
+<head>
+    <script type="text/javascript">
+    function getListOfHospitals(){
+    var selectedList = $('select#selectDropdown').val();
+    var zipcode = $('#zipcode').val();
+    console.log(zipcode);
+    //alert(zipcode);
+    //ajax call with the list to server.
+    var name;
+    $.ajax({
+    type: 'POST',
+    url: "/getHospitals",
+    contentType: 'application/json; charset=utf-8',
+    data: JSON.stringify({ 'codeList': selectedList, 'zipcode': zipcode, locale: 'en-US' }),
+    dataType: 'json',
+    success: displayHospitalListNew
+    });
+    console.log(name);
+
+
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+       function displayHospitalListNew(data){
+        var point = [];
+	document.getElementById("map").innerHTML = "<center><div id='map1' style='width: 500px; height: 500px;'></div></center>";
+	var bounds = new L.LatLngBounds(new L.LatLng(-90, -180), new L.LatLng(90, 180));
+	var state = [];
+	var map = L.map('map1', {
+            center: [39.5, -98.35],
+            zoom: 2,
+            maxBounds: bounds
+         });
+
+	var blueMarker = {
+	radius: 8,
+	fillColor: "blue"
+	};
+
+	var greenMarker = {
+	radius: 8,
+	color: "green"
+	};
+
+    /*$.each(data, function(i,record){
+        console.log(record['Cases_ADC']);
+    });*/
+    $('#mainDiv').find('#hospital_list').remove();
+    var table_tag = $('<table class="table" id="hospital_list"></table>')
+    var table_head = $('<tr><th>National Provider Id</th><th>Cases ADC</th><th>Cases Total</th><th>Incidence</th><th>Distance</th><th>Provider City Name</th></tr>');
+    table_tag.append(table_head);
+    $.each(data, function(i,record){
+        var row = $('<tr></tr>');
+        var national_provider_id = $('<td><label class="link" onclick="tableClick(this)" id="'+record['NATIONAL_PROVIDER_ID']+'">'+record['NATIONAL_PROVIDER_ID']+'</label></td>');
+        var case_adc = $('<td>'+record['Cases_ADC']+'</td>');
+        var cases_Total = $('<td>'+record['Cases_Total']+'</td>');
+        var incidence = $('<td>'+record['Incidence']+'</td>');
+		var distance = $('<td>'+record['distance']+'</td>');
+		var PROVIDER_CITY_NAME = $('<td>'+record['PROVIDER_CITY_NAME']+'</td>');
+				//alert(record['Lat1']);
+        //console.log(record['Cases_ADC']);
+        row.append(national_provider_id);
+        row.append(case_adc);
+        row.append(cases_Total);
+        row.append(incidence);
+		row.append(distance);
+		row.append(PROVIDER_CITY_NAME);
+        table_tag.append(row);
+
+		if(record['Incidence'] > 20){
+		L.circle([record['Lat1'],record['Long1']],8,{
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5
+}).addTo(map).bindPopup("<b>National Provider ID:</b><br>"+record['NATIONAL_PROVIDER_ID']).openPopup();
+    }
+		if(record['Incidence'] < 20){
+		L.circle([record['Lat1'],record['Long1']],8,{
+    color: 'green',
+    fillColor: '#f03',
+    fillOpacity: 0.5
+}).addTo(map).bindPopup("<b>National Provider ID:</b><br>"+record['NATIONAL_PROVIDER_ID']).openPopup();
+}
+    });
+
+
+
+    $('#mainDiv').append(table_tag);
+
+
+
+
+                            //var map = L.map('map').setView([points[i][2], points[i][3]], 13);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+        {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }
+    ).addTo(map);
+
+
+
+        }
+    </script>
+    <style>
+    body
+	{
+    background-color:#778899;
+}
+ img{
+    background-color: #2F4F4F;
+    }
+
+</style>
+</head>
+<body onload="getListOfHospitals()">
+<div>
+  <img src="./static/logo.png" alt="Logo" title="Intelligent" width="100"  border="10px">
+     <img src="./static/logo2.png" alt="Logo" title="MediQoc" align="left" width=100"  border="10px">
+      </div>
+    <div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="page-header">
+				<h2>
+					MediQOC
+				</h2>
+			</div>
+			<div class="col-md-6">
+
+				<div id="mainDiv">
+
+			</div>
+				</div>
+				<div class="col-md-6">
+                    <a href="#" onclick="history.go(-1)" class="topnav-icons fa fa-home w3-right">Go Back</a>
+				<fieldset>
+<div id = "maps">
+</div>
+<div id = "map"></div>
+</fieldset>
+</div>
+
+				</div>
+
+
+		</div>
+	</div>
+</div>
+<div class="navbar navbar-default navbar-fixed-bottom"  style="background-color:#778899">
+    <div class="container">
+   <p class="navbar-text" style="color: black" >This website and its content is copyright of Dimitrios Zikos, Intelligent Information-Driven Healthcare Lab -&copy; 2015. All rights reserved.</p>
+        </div>
+ </div>
+
+</body>
+</html>
